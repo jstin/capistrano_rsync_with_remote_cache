@@ -39,7 +39,10 @@ module Capistrano
         
         def update_vendored_gems
           system(vendored_gems_command)
-          system("cd #{local_cache_path} && bundle install --deployment --without 'development staging test'")
+          Bundler.with_clean_env do
+            system("cd #{local_cache_path}")
+            system("bundle install --deployment --without 'development staging test' --gemfile='#{local_cache_path}/Gemfile'")
+          end
         end
         
         def save_vendored_gems

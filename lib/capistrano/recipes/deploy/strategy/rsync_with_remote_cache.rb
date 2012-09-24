@@ -22,16 +22,28 @@ module Capistrano
         default_attribute :rsync_options, '-az --delete'
         default_attribute :local_cache, '.rsync_cache'
         default_attribute :repository_cache, 'cached-copy'
+        default_attribute :vendored_gems_cache, '.vendored_gems_cache'
 
         def deploy!
           update_local_cache
+          update_vendored_gems if configuration[:use_vendored_gems] == true
           update_remote_cache
           copy_remote_cache
+          save_vendored_gems if configuration[:use_vendored_gems] == true
         end
         
         def update_local_cache
           system(command)
           mark_local_cache
+        end
+        
+        def update_vendored_gems
+          system(vendored_gems_command)
+          system("bundle install --deployment")
+        end
+        
+        def save_vendored_gems
+          system("mv #{local_cache_vendored_gems_path} #{vendored_gems_directory}")
         end
         
         def update_remote_cache
@@ -57,6 +69,14 @@ module Capistrano
         
         def local_cache_path
           File.expand_path(local_cache)
+        end
+        
+        def vendored_gems_path
+          File.expand_path(vendored_gems_cache)
+        end
+        
+        def local_cache_vendored_gems_path
+          File.expand_path(File.join(local_cache, 'vendor', 'bundle'))
         end
         
         def repository_cache_path
@@ -91,6 +111,14 @@ module Capistrano
         def local_cache_valid?
           local_cache_exists? && File.directory?(local_cache_path)
         end
+        
+        def vendored_gems_cache_exists?
+          File.exist?(vendored_gems_path)
+        end
+        
+        def vendored_gems_cache_valid?
+          vendored_gems_exists? && File.directory?(vendored_gems_path)
+        end
 
         # Defines commands that should be checked for by deploy:check. These include the SCM command
         # on the local end, and rsync on both ends. Note that the SCM command is not needed on the
@@ -110,6 +138,16 @@ module Capistrano
             source.sync(revision, local_cache_path)
           elsif !local_cache_exists?
             "mkdir -p #{local_cache_path} && #{source.checkout(revision, local_cache_path)}"
+          else
+            raise InvalidCacheError, "The local cache exists but is not valid (#{local_cache_path})"
+          end
+        end
+
+        def vendored_gems_command
+          if vendored_gems_cache_valid?
+            "mv #{vendored_gems_directory} #{local_cache_vendored_gems_path}"
+          elsif !local_cache_exists?
+            "mkdir -p #{local_cache_vendored_gems_path}"
           else
             raise InvalidCacheError, "The local cache exists but is not valid (#{local_cache_path})"
           end

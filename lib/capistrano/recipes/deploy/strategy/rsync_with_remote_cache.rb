@@ -43,7 +43,7 @@ module Capistrano
         end
         
         def save_vendored_gems
-          system("mv #{local_cache_vendored_gems_path} #{vendored_gems_directory}")
+          system("mv #{local_cache_vendored_gems_path} #{vendored_gems_path}")
         end
         
         def update_remote_cache
@@ -145,7 +145,7 @@ module Capistrano
 
         def vendored_gems_command
           if vendored_gems_cache_valid?
-            "mv #{vendored_gems_directory} #{local_cache_vendored_gems_path}"
+            "mv #{vendored_gems_path} #{local_cache_vendored_gems_path}"
           elsif !vendored_gems_cache_exists?
             "mkdir -p #{local_cache_vendored_gems_path}"
           else

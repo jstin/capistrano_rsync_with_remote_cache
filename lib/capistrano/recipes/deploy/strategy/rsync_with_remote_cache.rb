@@ -117,7 +117,7 @@ module Capistrano
         end
         
         def vendored_gems_cache_valid?
-          vendored_gems_exists? && File.directory?(vendored_gems_path)
+          vendored_gems_cache_exists? && File.directory?(vendored_gems_path)
         end
 
         # Defines commands that should be checked for by deploy:check. These include the SCM command

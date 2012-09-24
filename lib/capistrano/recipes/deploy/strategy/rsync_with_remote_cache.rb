@@ -146,7 +146,7 @@ module Capistrano
         def vendored_gems_command
           if vendored_gems_cache_valid?
             "mv #{vendored_gems_directory} #{local_cache_vendored_gems_path}"
-          elsif !local_cache_exists?
+          elsif !vendored_gems_cache_exists?
             "mkdir -p #{local_cache_vendored_gems_path}"
           else
             raise InvalidCacheError, "The local cache exists but is not valid (#{local_cache_path})"

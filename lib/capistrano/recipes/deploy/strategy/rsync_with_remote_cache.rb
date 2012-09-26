@@ -48,8 +48,7 @@ module Capistrano
         
         def precompile_assets
           Bundler.with_clean_env do
-            system("cd #{local_cache_path}")
-            system("bundle exec rake assets:precompile")
+            system("cd #{local_cache_path}; bundle exec rake assets:precompile")
           end
         end
         

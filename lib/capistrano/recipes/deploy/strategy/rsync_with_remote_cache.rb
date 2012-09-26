@@ -47,7 +47,10 @@ module Capistrano
         end
         
         def precompile_assets
-          system("rake assets:precompile")
+          Bundler.with_clean_env do
+            system("cd #{local_cache_path}")
+            system("bundle exec rake assets:precompile")
+          end
         end
         
         def save_vendored_gems

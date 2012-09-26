@@ -27,6 +27,7 @@ module Capistrano
         def deploy!
           update_local_cache
           update_vendored_gems if configuration[:use_vendored_gems] == true
+          precompile_assets if configuration[:rsync_precompile_assets] == true
           update_remote_cache
           copy_remote_cache
           save_vendored_gems if configuration[:use_vendored_gems] == true
@@ -43,6 +44,10 @@ module Capistrano
             system("cd #{local_cache_path}")
             system("bundle install --deployment --without 'development staging test' --gemfile='#{local_cache_path}/Gemfile'")
           end
+        end
+        
+        def precompile_assets
+          system("rake assets:precompile")
         end
         
         def save_vendored_gems
